@@ -1,6 +1,6 @@
 import Head from "next/head";
 import { singleStory, allslugs } from "../../actions/story";
-import { API, DOMAIN, APP_NAME, MY_API } from "../../config";
+import { API, DOMAIN, APP_NAME} from "../../config";
 import Script from 'next/script';
 import { format } from 'date-fns';
 export const config = { amp: true };
@@ -257,14 +257,23 @@ const Stories = ({ story, errorCode }) => {
 
 
 
+
 export async function getStaticPaths() {
-  const slugs = await allslugs();
+  try {
+    const res = await fetch(`${MY_API}/web-stories/`);
+    if (!res.ok) throw new Error('Failed to fetch web stories');
 
-const excludedSlugs = ['/admin/edit-blogs'];
-const filteredSlugs = slugs.filter((slugObject) => !excludedSlugs.includes(slugObject.slug));
-const paths = filteredSlugs.map((slugObject) => ({ params: { slug: slugObject.slug } }));
+    const data = await res.json();
+    const paths = (data || []).map(item => ({
+      params: { slug: item.slug },
+    }));
 
-return { paths, fallback: "blocking" };
+    return { paths, fallback: 'blocking' };
+  } catch (err) {
+    console.error('Error fetching slugs:', err);
+    // Avoid crashing build
+    return { paths: [], fallback: 'blocking' };
+  }
 }
 
 
