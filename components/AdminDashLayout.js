@@ -3,7 +3,7 @@ import { signout, isAuth } from '../actions/auth';
 import Image from "next/image";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { BACKEND } from "@/config";
+import { BACKEND } from "config.js";
 import { useEffect, useState } from "react";
 import Router from "next/router";
 import { googleauthenticate } from "../actions/auth";
