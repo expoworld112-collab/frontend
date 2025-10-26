@@ -257,24 +257,21 @@ const Stories = ({ story, errorCode }) => {
 
 
 
-
 export async function getStaticPaths() {
   try {
-    const res = await fetch(`${MY_API}/web-stories/`);
-    if (!res.ok) throw new Error('Failed to fetch web stories');
-
-    const data = await res.json();
-    const paths = (data || []).map(item => ({
-      params: { slug: item.slug },
-    }));
-
-    return { paths, fallback: 'blocking' };
-  } catch (err) {
-    console.error('Error fetching slugs:', err);
-    // Avoid crashing build
-    return { paths: [], fallback: 'blocking' };
+    const res = await fetch('http://localhost:8000/web-stories');
+    if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+    const stories = await res.json();
+    const paths = stories.map(story => ({ params: { slug: story.slug } }));
+    return { paths, fallback: false };
+  } catch (error) {
+    console.error('Error fetching web stories:', error.message);
+    // Return empty paths to prevent build failure
+    return { paths: [], fallback: false };
   }
 }
+
+
 
 
 export async function getStaticProps({ params, res }) {

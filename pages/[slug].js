@@ -2,7 +2,7 @@ import Head from 'next/head';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { singleBlog, listRelated, getAllBlogSlugs } from '../actions/blog';
-import { DOMAIN, APP_NAME } from "../config";
+import { DOMAIN, APP_NAME , API } from "../config.js";
 import styles from "../styles/blogposts.module.css";
 // import DisqusThread from '@/components/DisqusThread';
 import SmallCard from '../components/blog/SmallCard';
@@ -164,30 +164,26 @@ const SingleBlog0 = ({ blog, errorCode }) => {
 
 
 
-export async function getStaticPaths() {
-    const slugs = await getAllBlogSlugs();
-    const excludedSlugs = ['/admin/edit-blogs', '/admin/blog', '/admin/edit-story', '/admin/web-story'];
-    const filteredSlugs = slugs.filter((slugObject) => !excludedSlugs.includes(slugObject.slug));
-    const paths = filteredSlugs.map((slugObject) => ({ params: { slug: slugObject.slug } }));
-    return { paths, fallback: "blocking" };
+
+
+
+
+export async function getStaticProps() {
+  let data = { blogs: [], categories: [], tags: [] };
+
+  try {
+    const res = await fetch('http://localhost:8000/blogs-categories-tags');
+    if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+    data = await res.json();
+  } catch (err) {
+    console.error('Error fetching data:', err);
+  }
+
+  return {
+    props: data,
+    revalidate: 10, // optional ISR
+  };
 }
 
-
-
-export async function getStaticProps({ params }) {
-    try {
-        const data = await singleBlog(params.slug);
-        if (data.error) { return { props: { errorCode: 404 } }; }
-        //   const formattedDate = format(new Date(data.date), 'dd MMMM, yyyy', { timeZone: 'Asia/Kolkata' });
-        const utcDate = new Date(data.date);
-        const istDate = utcToZonedTime(utcDate, 'Asia/Kolkata');
-        const formattedDate = format(istDate, 'dd MMM, yyyy', { timeZone: 'Asia/Kolkata' });
-
-        return { props: { blog: { ...data, formattedDate } } };
-    } catch (error) {
-        console.error(error);
-        return { props: { errorCode: 500 } };
-    }
-}
 
 export default SingleBlog0;

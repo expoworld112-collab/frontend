@@ -94,21 +94,32 @@ export async function getStaticProps() {
   }
   */
 
-  export async function getStaticProps() {
-    try {
-      const data = await listBlogsWithCategoriesAndTags();
-      const formattedBlogs = data.blogs.map(blog => {
-        const utcDate = new Date(blog.date);
-        const istDate = utcToZonedTime(utcDate, 'Asia/Kolkata');
-        const formattedDate = format(istDate, 'dd MMM, yyyy', { timeZone: 'Asia/Kolkata' });
-        return { ...blog, formattedDate };
-      });
-      return { props: { blogs: formattedBlogs } };
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      return { props: { blogs: [] } };
-    }
-  }
+  // export async function getStaticProps() {
+  //   try {
+  //     const data = await listBlogsWithCategoriesAndTags();
+  //     const formattedBlogs = data.blogs.map(blog => {
+  //       const utcDate = new Date(blog.date);
+  //       const istDate = utcToZonedTime(utcDate, 'Asia/Kolkata');
+  //       const formattedDate = format(istDate, 'dd MMM, yyyy', { timeZone: 'Asia/Kolkata' });
+  //       return { ...blog, formattedDate };
+  //     });
+  //     return { props: { blogs: formattedBlogs } };
+  //   } catch (error) {
+  //     console.error("Error fetching data:", error);
+  //     return { props: { blogs: [] } };
+  //   }
+  // }
 
-  
+  export async function getStaticProps() {
+  try {
+    const res = await fetch('http://localhost:8000/blogs-categories-tags');
+    if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+    const data = await res.json();
+    return { props: data };
+  } catch (error) {
+    console.error('Error fetching blog data:', error.message);
+    return { props: { blogs: [], categories: [], tags: [] } };
+  }
+}
+
 export default Index;
